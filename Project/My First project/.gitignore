@@ -1,0 +1,45 @@
+﻿[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Mm]emoryCaptures/
+UserSettings/
+.vs/
+.idea/
+.gradle/
+ExportedObj/
+.consulo/
+
+# Unity generated project files
+*.csproj
+*.unityproj
+*.sln
+*.slnx
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# Packages cache
+Packages/packages-lock.json
+
+# OS / editor clutter
+.DS_Store
+Thumbs.db
+*.stackdump
+
+# Crash reports
+sysinfo.txt
+
+# Large generated logs
+*.log
+.dotnet/

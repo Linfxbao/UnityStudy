@@ -1,0 +1,69 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!78 &1
+TagManager:
+  serializedVersion: 3
+  tags:
+  - Platform
+  - GM
+  - Enemy
+  layers:
+  - Default
+  - TransparentFX
+  - Ignore Raycast
+  - Obstacle
+  - Water
+  - UI
+  - BackGround_Red
+  - BackGround_Orange
+  - FrontGround_Red
+  - BackGround_Grey
+  - Platform
+  - BackGround_Blue
+  - Player
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  m_SortingLayers:
+  - name: Default
+    uniqueID: 0
+    locked: 0
+  - name: BackGround_Blue
+    uniqueID: 221454657
+    locked: 0
+  - name: BackGround_Grey
+    uniqueID: 3305142595
+    locked: 0
+  - name: BackGround_Red
+    uniqueID: 270568165
+    locked: 0
+  - name: BackGround_Orange
+    uniqueID: 3723396983
+    locked: 0
+  - name: Platform
+    uniqueID: 2391789431
+    locked: 0
+  - name: Player
+    uniqueID: 2728917759
+    locked: 0
+  - name: FrontGround_Red
+    uniqueID: 2407229087
+    locked: 0
+  m_RenderingLayers:
+  - Default
