@@ -1,4 +1,6 @@
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerUI : MonoBehaviour
 {
@@ -6,17 +8,29 @@ public class PlayerUI : MonoBehaviour
     [SerializeField] private GameObject circleArrowGameObject;
     [SerializeField] private GameObject crossYouTextMeshGameObject;
     [SerializeField] private GameObject circleYouTextMeshGameObject;
+    [SerializeField] private TextMeshProUGUI playerCrossScoreTextMesh;
+    [SerializeField] private TextMeshProUGUI playerCircleScoreTextMesh; 
 
     private void Awake() {
         crossArrowGameObject.SetActive(false);
         circleArrowGameObject.SetActive(false);
         crossYouTextMeshGameObject.SetActive(false);
         circleYouTextMeshGameObject.SetActive(false);
+
+        playerCrossScoreTextMesh.text = "";
+        playerCircleScoreTextMesh.text = "";
     }
 
     private void Start() {
         GameManager.Instance.OnGameStarted += GameManager_OnGameStarted;
         GameManager.Instance.OnCurrentPlayablePlayerTypeChanged += GameManager_OnCurrentPlayablePlayerTypeChanged;
+        GameManager.Instance.OnScoreChanged += GameManager_OnScoreChanged;
+    }
+
+    private void GameManager_OnScoreChanged(object sender, System.EventArgs e) {
+        GameManager.Instance.GetScores(out int playerCrossScore, out int playerCircleScore);
+        playerCrossScoreTextMesh.text = playerCrossScore.ToString();
+        playerCircleScoreTextMesh.text = playerCircleScore.ToString();
     }
 
     private void GameManager_OnCurrentPlayablePlayerTypeChanged(object sender, System.EventArgs e) {
@@ -29,6 +43,8 @@ public class PlayerUI : MonoBehaviour
         } else {
             circleYouTextMeshGameObject.SetActive(true);
         }
+        playerCrossScoreTextMesh.text = "";
+        playerCircleScoreTextMesh.text = "";
 
         UpdateCurrentArrow();
     }
@@ -42,5 +58,4 @@ public class PlayerUI : MonoBehaviour
             circleArrowGameObject.SetActive(true);
         }
     }
-
 }
