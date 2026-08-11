@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class GridPosition : MonoBehaviour/*, IPointerDownHandler*/
 {
+    // 棋盘位置x, y
     [SerializeField]
     private int x;
     [SerializeField]
@@ -19,6 +20,7 @@ public class GridPosition : MonoBehaviour/*, IPointerDownHandler*/
     // 配合BoxCollision使用
     private void OnMouseDown() {
         Debug.Log("Click!" + x + "," + y);
+        // 点击是调用GameManager中的函数
         GameManager.Instance.ClickedOnGridPositionRpc(x, y, GameManager.Instance.GetLocalPlayerType());
     }
 }

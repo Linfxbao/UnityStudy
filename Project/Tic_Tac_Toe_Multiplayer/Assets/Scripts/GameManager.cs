@@ -8,16 +8,22 @@ public class GameManager : NetworkBehaviour
     // 创建单例模式
     public static GameManager Instance { get; private set;}
 
-    // 事件处理器
+    // 设置事件
+    // 点击网格位置
     public event EventHandler<OnClickedOnGridPositionEventArgs> OnClickedOnGridPosition;
+    // 开始游戏
     public event EventHandler OnGameStarted;
+    // 重置场景
     public event EventHandler OnRematch;
+    // 出现平局
     public event EventHandler OnGameTied;
+    // 游戏胜利/失败
     public event EventHandler<OnGameWinEventArgs> OnGameWin;
     public class OnGameWinEventArgs : EventArgs {
         public Line line;
         public PlayerType winPlayerType;
     }
+    // 切换落子方
     public event EventHandler OnCurrentPlayablePlayerTypeChanged;
     // 事件参数类
     public class OnClickedOnGridPositionEventArgs : EventArgs {
@@ -25,17 +31,20 @@ public class GameManager : NetworkBehaviour
         public int y;
         public PlayerType playerType;
     }
+    // 分数变化
     public event EventHandler OnScoreChanged;
+    //放置棋子音效事件
     public event EventHandler OnPlacedObject;
 
     
-
+    // 玩家状态
     public enum PlayerType {
         None,
         Cross,
         Circle,
     }
 
+    // 连成线的方式：水平、垂直、对角线
     public enum Orientation {
         Horizontal,
         Vertical,
@@ -43,6 +52,7 @@ public class GameManager : NetworkBehaviour
         DiagonalB,
     }
 
+    // 棋子位置；行、列、对角线三个棋子的中心位置；连线角度
     public struct Line/* : INetworkSerializable*/ {
         public List<Vector2Int> gridVector2IntList;
         public Vector2Int centerGridPosition;
@@ -55,15 +65,21 @@ public class GameManager : NetworkBehaviour
         // }
     }
 
+    // 当前用户所执棋子
     private PlayerType localPlayerType;
+    // 现在落子的用户所执棋子
     private NetworkVariable<PlayerType> currentPlayablePlayerType = new NetworkVariable<PlayerType>();
+    // 记录棋盘当前状况
     private PlayerType[,] playerTypeArray;
+    // 胜利的可能排列
     private List<Line> lineList;
+    // 玩家分数
     private NetworkVariable<int> playerCrossScore = new NetworkVariable<int>();
     private NetworkVariable<int> playerCircleScore = new NetworkVariable<int>();
 
 
     private void Awake() {
+        // 初始化单例
         if (Instance != null) {
             Debug.LogError("More than one GameManager instance!");
         }
@@ -71,6 +87,7 @@ public class GameManager : NetworkBehaviour
 
         playerTypeArray = new PlayerType[3, 3];
 
+        // 设置胜利的可能
         lineList = new List<Line>{
             // 垂直
             new Line {
@@ -119,6 +136,7 @@ public class GameManager : NetworkBehaviour
         };
     }
 
+    // 客户端连接成功并完成同步后执行
     public override void OnNetworkSpawn() {
         Debug.Log("OnNetworkSpawn: " + NetworkManager.Singleton.LocalClientId);
         if (NetworkManager.Singleton.LocalClientId == 0) {
@@ -143,6 +161,7 @@ public class GameManager : NetworkBehaviour
         };
     }
 
+    // 当前有两个玩家后开始游戏
     private void NetworkManager_OnClientConnectedCallback(ulong obj) {
         if (NetworkManager.Singleton.ConnectedClientsList.Count == 2) {
             // 开始游戏
@@ -153,33 +172,40 @@ public class GameManager : NetworkBehaviour
 
     }
 
+    // OnGameStarted事件触发
     [Rpc(SendTo.ClientsAndHost)]
     private void TriggerOnGameStartedRpc() {
         OnGameStarted?.Invoke(this, EventArgs.Empty);
     }
 
+    // 点击区域后调用， 因为该逻辑只在服务器中调用，因此不用广播到客户端
     [Rpc(SendTo.Server)]
     public void ClickedOnGridPositionRpc(int x, int y, PlayerType playerType) {
         Debug.Log("ClickOnGridPosition: " + x + "," + y);
-
+        
+        //判断点击的用户是否是当前落棋的玩家
         if (playerType != currentPlayablePlayerType.Value) {
             return;
         }
 
+        // 判断点击的区域是否是空的
         if (playerTypeArray[x, y] != PlayerType.None) {
             return;
         }
 
+        // 设置当前位置为相应的棋子
         playerTypeArray[x, y] = playerType;
+        // 播放音效
         TriggerOnPlacedObjectRpc();
 
-        // GameVisualManager
+        // 设置OnClickedOnGridPosition事件参数对象
         OnClickedOnGridPosition?.Invoke(this, new OnClickedOnGridPositionEventArgs {
             x = x,
             y = y,
             playerType = playerType,
         });
 
+        // 切换落子玩家
         switch (currentPlayablePlayerType.Value) {
             default:
             case PlayerType.Cross:
@@ -189,14 +215,17 @@ public class GameManager : NetworkBehaviour
                 currentPlayablePlayerType.Value = PlayerType.Cross;
                 break;
         }
+        // 检测是否胜利
         TestWinner();
     }
 
+    // 音效
     [Rpc(SendTo.ClientsAndHost)]
     private void TriggerOnPlacedObjectRpc() {
         OnPlacedObject?.Invoke(this, EventArgs.Empty);
     }
 
+    // 判断三个棋子是否都是同一类型
     private bool TestWinnerLine(Line line) {
         return TestWinnerLine(
             playerTypeArray[line.gridVector2IntList[0].x, line.gridVector2IntList[0].y],
@@ -212,6 +241,7 @@ public class GameManager : NetworkBehaviour
     private void TestWinner() {
         for (int i = 0; i < lineList.Count; i++) {
             Line line = lineList[i];
+            // 若有胜利方，则设置胜利方，并加分
             if (TestWinnerLine(line)) {
                 Debug.Log("Winner!");
                 currentPlayablePlayerType.Value = PlayerType.None; 
@@ -230,6 +260,7 @@ public class GameManager : NetworkBehaviour
             }
         }
 
+        // 判断是否是平局
         bool hasTie = true;
         for (int x = 0; x < playerTypeArray.GetLength(0); x++) {
             for (int y = 0; y < playerTypeArray.GetLength(1); y++) {
@@ -250,6 +281,7 @@ public class GameManager : NetworkBehaviour
         OnGameTied?.Invoke(this, EventArgs.Empty);
     }
 
+    // 传递胜利方信息
     [Rpc(SendTo.ClientsAndHost)]
     private void TriggerOnGameWinRpc(int lineIndex, PlayerType winPlayerType) {
         Line line = lineList[lineIndex];
@@ -259,8 +291,10 @@ public class GameManager : NetworkBehaviour
         });
     }
 
+    // 重置游戏
     [Rpc(SendTo.Server)]
     public void RematchRpc() {
+        // 设置当前棋盘为空
         for (int x = 0; x < playerTypeArray.GetLength(0); x++) {
             for (int y = 0; y < playerTypeArray.GetLength(1); y++) {
                 playerTypeArray[x, y] = PlayerType.None;
@@ -284,6 +318,7 @@ public class GameManager : NetworkBehaviour
         return currentPlayablePlayerType.Value;
     }
 
+    // 返回当前二者分数， out规定参数必须在函数中赋值
     public void GetScores(out int playerCrossScore, out int playerCircleScore) {
         playerCrossScore = this.playerCrossScore.Value;
         playerCircleScore = this.playerCircleScore.Value;
