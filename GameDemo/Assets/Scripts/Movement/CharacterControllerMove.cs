@@ -19,8 +19,9 @@ public class CharacterControllerMove : MonoBehaviour
 
     private void Update()
     {
-        float horizontal = Input.GetAxis("Horizontal");
-        float vertical = Input.GetAxis("Vertical");
+        float horizontal = Input.GetAxisRaw("Horizontal");
+        float vertical = Input.GetAxisRaw("Vertical");
+        
         Vector3 move = transform.right * horizontal + transform.forward * vertical;
 
         characterController.Move(move * moveSpeed * Time.deltaTime);
